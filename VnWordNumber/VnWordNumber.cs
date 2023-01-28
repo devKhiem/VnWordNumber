@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Text;
 
-namespace VnWordNumber
+namespace khiemnguyen.dev.utility
 {
     public class VnWordNumber
     {

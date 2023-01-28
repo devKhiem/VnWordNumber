@@ -4,6 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>khiemnguyen.dev.utility.$(AssemblyName)</PackageId>
+    <Title>$(AssemblyName)</Title>
+    <Authors>khiemnguyen.dev</Authors>
+    <Company></Company>
+    <PackageProjectUrl>https://github.com/devKhiem/VnWordNumber</PackageProjectUrl>
   </PropertyGroup>
 
 </Project>
