@@ -6,19 +6,19 @@ namespace khiemnguyen.dev.utility
     public class VnWordNumber
     {
         private static readonly string[] PrimaryNumbers = { "không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín" };
-        private static StringBuilder result = default!;
-        public static string ReadNumber(BigInteger number)
+        public static StringBuilder ReadNumber(BigInteger number, StringBuilder? builder = default)
         {
+            builder ??= new();
+
             if (number == 0)
             {
-                return "không";
+                AppendWord("không", builder);
+                return builder;
             }
-
-            result = new();
 
             if (number.Sign == -1)
             {
-                AppendWord("âm");
+                AppendWord("âm", builder);
                 number = BigInteger.Multiply(number, -1);
             }
 
@@ -38,29 +38,42 @@ namespace khiemnguyen.dev.utility
                 BigInteger billionsValue = BigInteger.Pow(10, (int)(billions * 9));
 
                 uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
-                ReadNine(nine, true);
+                ReadNine(nine, true, builder);
             }
 
             while (billions > 0)
             {
-                AppendWord("tỷ");
+                AppendWord("tỷ", builder);
 
                 BigInteger billionsValue = BigInteger.Pow(10, (int)(--billions * 9));
 
                 uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
-                ReadNine(nine, false);
+                ReadNine(nine, false, builder);
             }
-
-            try
-            {
-                return result.ToString();
-            }
-            finally
-            {
-                result.Clear();
-            }
+            return builder;
         }
-        private static bool ReadTree(ushort number, bool isFirst)
+        public static StringBuilder ReadNumber(decimal number, StringBuilder? builder = default)
+        {
+            decimal decimalNumber;
+            {
+                decimal integerNumber = Math.Truncate(number);
+                builder = ReadNumber(new BigInteger(integerNumber), builder);
+                decimalNumber = Math.Abs(number) - Math.Abs(integerNumber);
+            }
+            if (decimalNumber > 0)
+            {
+                AppendWord("phẩy", builder);
+                while (decimalNumber > 0)
+                {
+                    decimalNumber *= 10;
+                    int integerNumber = (int)Math.Truncate(decimalNumber);
+                    AppendWord(PrimaryNumbers[integerNumber], builder);
+                    decimalNumber -= integerNumber;
+                }
+            }
+            return builder;
+        }
+        private static bool ReadTree(ushort number, bool isFirst, StringBuilder builder)
         {
             if (number == 0)
             {
@@ -79,7 +92,7 @@ namespace khiemnguyen.dev.utility
             #region Hàng trăm
             if (!isFirst || hundreds != 0)
             {
-                AppendWord(PrimaryNumbers[hundreds] + " trăm");
+                AppendWord(PrimaryNumbers[hundreds] + " trăm", builder);
             }
             #endregion
 
@@ -89,14 +102,14 @@ namespace khiemnguyen.dev.utility
                 case 0:
                     if (units != 0 && (hundreds != 0 || !isFirst))
                     {
-                        AppendWord("linh");
+                        AppendWord("linh", builder);
                     }
                     break;
                 case 1:
-                    AppendWord("mười");
+                    AppendWord("mười", builder);
                     break;
                 default:
-                    AppendWord(PrimaryNumbers[tens] + " mươi");
+                    AppendWord(PrimaryNumbers[tens] + " mươi", builder);
                     break;
             }
             #endregion
@@ -109,32 +122,32 @@ namespace khiemnguyen.dev.utility
                 case 1:
                     if (tens == 0 || tens == 1)
                     {
-                        AppendWord("một");
+                        AppendWord("một", builder);
                     }
                     else
                     {
-                        AppendWord("mốt");
+                        AppendWord("mốt", builder);
                     }
                     break;
                 case 5:
                     if (tens == 0)
                     {
-                        AppendWord("năm");
+                        AppendWord("năm", builder);
                     }
                     else
                     {
-                        AppendWord("lăm");
+                        AppendWord("lăm", builder);
                     }
                     break;
                 default:
-                    AppendWord(PrimaryNumbers[units]);
+                    AppendWord(PrimaryNumbers[units], builder);
                     break;
             }
             #endregion
 
             return true;
         }
-        private static bool ReadNine(uint number, bool isFirst)
+        private static bool ReadNine(uint number, bool isFirst, StringBuilder builder)
         {
             if (number == 0)
             {
@@ -150,33 +163,33 @@ namespace khiemnguyen.dev.utility
                 units = (ushort)remain;
             }
 
-            if (ReadTree(millions, isFirst))
+            if (ReadTree(millions, isFirst, builder))
             {
                 isFirst = false;
-                AppendWord("triệu");
+                AppendWord("triệu", builder);
             }
 
-            if (ReadTree(thousands, isFirst))
+            if (ReadTree(thousands, isFirst, builder))
             {
                 isFirst = false;
-                AppendWord("ngàn");
+                AppendWord("ngàn", builder);
             }
 
-            ReadTree(units, isFirst);
+            ReadTree(units, isFirst, builder);
 
             return true;
         }
-        private static void AppendWord(string text)
+        private static void AppendWord(string text, StringBuilder builder)
         {
             if (string.IsNullOrEmpty(text))
             {
                 return;
             }
-            if (result.Length != 0)
+            if (builder.Length != 0)
             {
-                result.Append(' ');
+                builder.Append(' ');
             }
-            result.Append(text);
+            builder.Append(text);
         }
     }
 }
