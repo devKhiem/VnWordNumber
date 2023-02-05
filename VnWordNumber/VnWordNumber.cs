@@ -58,18 +58,18 @@ namespace khiemnguyen.dev.utility
             {
                 decimal integerNumber = Math.Truncate(number);
                 builder = ReadNumber(new BigInteger(integerNumber), builder);
-                decimalNumber = Math.Abs(number) - Math.Abs(integerNumber);
+                decimalNumber = Math.Abs(number - integerNumber);
             }
             if (decimalNumber > 0)
             {
                 AppendWord("phẩy", builder);
-                while (decimalNumber > 0)
+                do
                 {
                     decimalNumber *= 10;
-                    int integerNumber = (int)Math.Truncate(decimalNumber);
+                    byte integerNumber = (byte)Math.Truncate(decimalNumber);
                     AppendWord(PrimaryNumbers[integerNumber], builder);
                     decimalNumber -= integerNumber;
-                }
+                } while (decimalNumber > 0);
             }
             return builder;
         }
