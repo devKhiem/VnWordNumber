@@ -22,56 +22,11 @@ namespace khiemnguyen.dev.utility
                 number = BigInteger.Multiply(number, -1);
             }
 
-            BigInteger billions;
+            if(Implement1(ref number, builder) is false)
             {
-                BigInteger count;
-                {
-                    double tempCount = Math.Round(BigInteger.Log10(number));
-                    if (tempCount <= int.MaxValue)
-                    {
-                        BigInteger check = BigInteger.Pow(10, (int)tempCount);
-                        if (check <= number)
-                        {
-                            ++tempCount;
-                        }
-
-                        count = new BigInteger(tempCount);
-                    }
-                    else
-                    {
-                        BigInteger temp = number;
-                        count = 0;
-
-                        do
-                        {
-                            ++count;
-                            temp /= 10;
-                        }
-                        while (temp > 0);
-                    }
-                }
-
-                billions = (count - 1) / 9;
-                BigInteger exponent = billions * 9;
-                if (exponent > int.MaxValue)
-                {
-                    throw new ArgumentException("Input value is too big!");
-                }
-                BigInteger billionsValue = BigInteger.Pow(10, (int)exponent);
-
-                uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
-                ReadNine(nine, true, builder);
+                Implement2(ref number, builder);
             }
 
-            while (billions > 0)
-            {
-                AppendWord("tỷ", builder);
-
-                BigInteger billionsValue = BigInteger.Pow(10, (int)(--billions * 9));
-
-                uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
-                ReadNine(nine, false, builder);
-            }
             return builder;
         }
         public static StringBuilder ReadNumber(decimal number, StringBuilder? builder = default)
@@ -101,6 +56,85 @@ namespace khiemnguyen.dev.utility
             }
 
             return builder;
+        }
+        private static bool Implement1(ref BigInteger number, StringBuilder builder)
+        {
+            BigInteger billions;
+            {
+                BigInteger count;
+                {
+                    double tempCount = Math.Round(BigInteger.Log10(number));
+
+                    if (tempCount <= int.MaxValue)
+                    {
+                        BigInteger check = BigInteger.Pow(10, (int)tempCount);
+
+                        if (check <= number)
+                        {
+                            ++tempCount;
+                        }
+
+                        count = new BigInteger(tempCount);
+                    }
+                    else
+                    {
+                        BigInteger temp = number;
+                        count = 0;
+
+                        do
+                        {
+                            ++count;
+                            temp /= 10;
+                        }
+                        while (temp > 0);
+                    }
+                }
+
+                billions = (count - 1) / 9;
+
+                BigInteger exponent = billions * 9;
+
+                if (exponent > int.MaxValue)
+                {
+                    return false;
+                }
+
+                BigInteger billionsValue = BigInteger.Pow(10, (int)exponent);
+
+                uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
+                ReadNine(nine, true, builder);
+            }
+
+            while (billions > 0)
+            {
+                AppendWord("tỷ", builder);
+
+                BigInteger billionsValue = BigInteger.Pow(10, (int)(--billions * 9));
+
+                uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
+                ReadNine(nine, false, builder);
+            }
+
+            return true;
+        }
+        private static bool Implement2(ref BigInteger number, StringBuilder builder)
+        {
+            number = BigInteger.DivRem(number, 1000000000, out BigInteger remainder);
+
+            bool isFirst = true;
+
+            if (number > 0)
+            {
+                Implement2(ref number, builder);
+
+                AppendWord("tỷ", builder);
+
+                isFirst = false;
+            }
+
+            ReadNine((uint)remainder, isFirst, builder);
+
+            return true;
         }
         private static bool ReadTree(ushort number, bool isFirst, StringBuilder builder)
         {
