@@ -12,20 +12,19 @@ namespace khiemnguyen.dev.utility
 
             if (number == 0)
             {
-                AppendWord("không", builder);
+                builder.AppendWord("không");
+
                 return builder;
             }
 
             if (number.Sign == -1)
             {
-                AppendWord("âm", builder);
+                builder.AppendWord("âm");
+
                 number = BigInteger.Multiply(number, -1);
             }
 
-            if(Implement1(ref number, builder) is false)
-            {
-                Implement2(ref number, builder);
-            }
+            builder.Run(ref number);
 
             return builder;
         }
@@ -41,14 +40,14 @@ namespace khiemnguyen.dev.utility
 
             if (fractionalPart > 0)
             {
-                AppendWord("phẩy", builder);
+                builder.AppendWord("phẩy");
 
                 do
                 {
                     fractionalPart *= 10;
 
                     byte integerPart = (byte)Math.Truncate(fractionalPart);
-                    AppendWord(PrimaryNumbers[integerPart], builder);
+                    builder.AppendWord(PrimaryNumbers[integerPart]);
 
                     fractionalPart -= integerPart;
                 }
@@ -57,67 +56,7 @@ namespace khiemnguyen.dev.utility
 
             return builder;
         }
-        private static bool Implement1(ref BigInteger number, StringBuilder builder)
-        {
-            BigInteger billions;
-            {
-                BigInteger count;
-                {
-                    double tempCount = Math.Round(BigInteger.Log10(number));
-
-                    if (tempCount <= int.MaxValue)
-                    {
-                        BigInteger check = BigInteger.Pow(10, (int)tempCount);
-
-                        if (check <= number)
-                        {
-                            ++tempCount;
-                        }
-
-                        count = new BigInteger(tempCount);
-                    }
-                    else
-                    {
-                        BigInteger temp = number;
-                        count = 0;
-
-                        do
-                        {
-                            ++count;
-                            temp /= 10;
-                        }
-                        while (temp > 0);
-                    }
-                }
-
-                billions = (count - 1) / 9;
-
-                BigInteger exponent = billions * 9;
-
-                if (exponent > int.MaxValue)
-                {
-                    return false;
-                }
-
-                BigInteger billionsValue = BigInteger.Pow(10, (int)exponent);
-
-                uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
-                ReadNine(nine, true, builder);
-            }
-
-            while (billions > 0)
-            {
-                AppendWord("tỷ", builder);
-
-                BigInteger billionsValue = BigInteger.Pow(10, (int)(--billions * 9));
-
-                uint nine = (uint)BigInteger.DivRem(number, billionsValue, out number);
-                ReadNine(nine, false, builder);
-            }
-
-            return true;
-        }
-        private static bool Implement2(ref BigInteger number, StringBuilder builder)
+        private static void Run(this StringBuilder builder, ref BigInteger number)
         {
             number = BigInteger.DivRem(number, 1000000000, out BigInteger remainder);
 
@@ -125,18 +64,15 @@ namespace khiemnguyen.dev.utility
 
             if (number > 0)
             {
-                Implement2(ref number, builder);
-
-                AppendWord("tỷ", builder);
+                builder.Run(ref number);
+                builder.AppendWord("tỷ");
 
                 isFirst = false;
             }
 
-            ReadNine((uint)remainder, isFirst, builder);
-
-            return true;
+            builder.ReadNine((uint)remainder, isFirst);
         }
-        private static bool ReadTree(ushort number, bool isFirst, StringBuilder builder)
+        private static bool ReadTree(this StringBuilder builder, ushort number, bool isFirst)
         {
             if (number == 0)
             {
@@ -155,7 +91,7 @@ namespace khiemnguyen.dev.utility
             #region Hàng trăm
             if (!isFirst || hundreds != 0)
             {
-                AppendWord(PrimaryNumbers[hundreds] + " trăm", builder);
+                builder.AppendWord(PrimaryNumbers[hundreds] + " trăm");
             }
             #endregion
 
@@ -165,14 +101,14 @@ namespace khiemnguyen.dev.utility
                 case 0:
                     if (units != 0 && (hundreds != 0 || !isFirst))
                     {
-                        AppendWord("linh", builder);
+                        builder.AppendWord("linh");
                     }
                     break;
                 case 1:
-                    AppendWord("mười", builder);
+                    builder.AppendWord("mười");
                     break;
                 default:
-                    AppendWord(PrimaryNumbers[tens] + " mươi", builder);
+                    builder.AppendWord(PrimaryNumbers[tens] + " mươi");
                     break;
             }
             #endregion
@@ -185,32 +121,32 @@ namespace khiemnguyen.dev.utility
                 case 1:
                     if (tens == 0 || tens == 1)
                     {
-                        AppendWord("một", builder);
+                        builder.AppendWord("một");
                     }
                     else
                     {
-                        AppendWord("mốt", builder);
+                        builder.AppendWord("mốt");
                     }
                     break;
                 case 5:
                     if (tens == 0)
                     {
-                        AppendWord("năm", builder);
+                        builder.AppendWord("năm");
                     }
                     else
                     {
-                        AppendWord("lăm", builder);
+                        builder.AppendWord("lăm");
                     }
                     break;
                 default:
-                    AppendWord(PrimaryNumbers[units], builder);
+                    builder.AppendWord(PrimaryNumbers[units]);
                     break;
             }
             #endregion
 
             return true;
         }
-        private static bool ReadNine(uint number, bool isFirst, StringBuilder builder)
+        private static bool ReadNine(this StringBuilder builder, uint number, bool isFirst)
         {
             if (number == 0)
             {
@@ -226,23 +162,23 @@ namespace khiemnguyen.dev.utility
                 units = (ushort)remain;
             }
 
-            if (ReadTree(millions, isFirst, builder))
+            if (builder.ReadTree(millions, isFirst))
             {
                 isFirst = false;
-                AppendWord("triệu", builder);
+                builder.AppendWord("triệu");
             }
 
-            if (ReadTree(thousands, isFirst, builder))
+            if (builder.ReadTree(thousands, isFirst))
             {
                 isFirst = false;
-                AppendWord("ngàn", builder);
+                builder.AppendWord("ngàn");
             }
 
-            ReadTree(units, isFirst, builder);
+            builder.ReadTree(units, isFirst);
 
             return true;
         }
-        private static void AppendWord(string text, StringBuilder builder)
+        private static void AppendWord(this StringBuilder builder, string text)
         {
             if (string.IsNullOrEmpty(text))
             {
